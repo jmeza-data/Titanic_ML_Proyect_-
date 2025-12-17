@@ -155,22 +155,40 @@ with tab1:
 
     st.markdown("<br>", unsafe_allow_html=True)
 
-    if st.button(txt["predict_btn"]):
-        input_df = pd.DataFrame({
-            'Pclass': [pclass],
-            'Sex': [sex],
-            'Age': [age],
-            'SibSp': [sibsp],
-            'Parch': [parch],
-            'Fare': [fare],
-            'Embarked': [embarked],
-            'FamilySize': [family_size],
-            'IsAlone': [is_alone]
-        })
-        
-        X = preprocessor.transform(input_df)
-        prediction = model.predict(X)[0]
-        probability = model.predict_proba(X)[0][1]
+if st.button(txt["predict_btn"]):
+    # Crear el DataFrame con las columnas EXACTAS que usaste en el entrenamiento
+    input_df = pd.DataFrame({
+        'Pclass': [pclass],
+        'Sex': [sex],
+        'Age': [age],
+        'SibSp': [sibsp],
+        'Parch': [parch],
+        'Fare': [fare],
+        'Embarked': [embarked]
+    })
+    
+    # Asegurarse de que los tipos de datos sean correctos
+    input_df['Pclass'] = input_df['Pclass'].astype(int)
+    input_df['Age'] = input_df['Age'].astype(float)
+    input_df['SibSp'] = input_df['SibSp'].astype(int)
+    input_df['Parch'] = input_df['Parch'].astype(int)
+    input_df['Fare'] = input_df['Fare'].astype(float)
+    
+    # Transformar con el preprocessor
+    X = preprocessor.transform(input_df)
+    
+    # Hacer la predicción
+    prediction = model.predict(X)[0]
+    probability = model.predict_proba(X)[0][1]
+
+
+
+
+
+
+
+
+
         
         col_res1, col_res2 = st.columns(2)
         
@@ -269,4 +287,5 @@ with tab3:
 
 # Footer
 st.markdown("---")
+
 st.caption(txt["footer"])
