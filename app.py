@@ -11,12 +11,12 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Enhanced CSS with modern design
+# Enhanced CSS with dark background
 st.markdown("""
 <style>
-    /* Main background gradient */
+    /* Main background gradient - DARK */
     .stApp {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: linear-gradient(135deg, #1e3c72 0%, #2a5298 50%, #7e22ce 100%);
     }
     
     /* Button styling */
@@ -42,18 +42,18 @@ st.markdown("""
     [data-testid="stMetricValue"] {
         font-size: 28px;
         font-weight: bold;
-        color: #667eea;
+        color: #FFD700;
     }
     
     /* Headers */
     h1, h2, h3 {
         color: white !important;
-        text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
     }
     
     /* Sidebar */
     [data-testid="stSidebar"] {
-        background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
+        background: linear-gradient(180deg, #1e3c72 0%, #2a5298 50%, #7e22ce 100%);
     }
     
     [data-testid="stSidebar"] * {
@@ -82,11 +82,16 @@ st.markdown("""
     
     /* Cards with glass effect */
     div[data-testid="column"] {
-        background: rgba(255, 255, 255, 0.1);
+        background: rgba(255, 255, 255, 0.05);
         border-radius: 15px;
         padding: 20px;
         backdrop-filter: blur(10px);
-        border: 1px solid rgba(255, 255, 255, 0.2);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    /* Text color */
+    p, span, label {
+        color: white !important;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -387,9 +392,9 @@ with tab2:
         paper_bgcolor='rgba(0,0,0,0)',
         plot_bgcolor='rgba(255,255,255,0.1)',
         font={'color': 'white', 'size': 12},
-        legend={'bgcolor': 'rgba(255,255,255,0.1)'},
-        xaxis={'gridcolor': 'rgba(255,255,255,0.2)'},
-        yaxis={'gridcolor': 'rgba(255,255,255,0.2)'}
+        legend={'bgcolor': 'rgba(255,255,255,0.1)', 'font': {'color': 'white'}},
+        xaxis={'gridcolor': 'rgba(255,255,255,0.2)', 'color': 'white'},
+        yaxis={'gridcolor': 'rgba(255,255,255,0.2)', 'color': 'white'}
     )
     
     st.plotly_chart(fig_comparison, use_container_width=True)
@@ -397,6 +402,7 @@ with tab2:
     st.markdown("---")
     st.markdown(f"## {txt['feature_importance']}")
     
+    # ==================== BUG FIX: Simplified colorbar configuration ====================
     importance_data = {
         'Feature': ['💰 Fare', '👤 Age', '👨 Sex_male', '👩 Sex_female', '🎫 Pclass', '👨‍👩‍👧 FamilySize', '👫 SibSp', '👶 Parch'],
         'Importance': [0.25, 0.22, 0.18, 0.15, 0.10, 0.05, 0.03, 0.02]
@@ -404,19 +410,18 @@ with tab2:
     
     df_importance = pd.DataFrame(importance_data)
     
+    # Simplified approach - no colorbar to avoid the error
     fig_importance = go.Figure(go.Bar(
         x=df_importance['Importance'],
         y=df_importance['Feature'],
         orientation='h',
         marker=dict(
             color=df_importance['Importance'],
-            colorscale='Viridis',
-            showscale=True,
-            colorbar=dict(title="Importance", titlefont=dict(color='white'), tickfont=dict(color='white'))
+            colorscale='Viridis'
         ),
-        text=df_importance['Importance'],
-        texttemplate='%{text:.2f}',
-        textposition='outside'
+        text=[f"{val:.2f}" for val in df_importance['Importance']],
+        textposition='outside',
+        textfont=dict(color='white', size=14)
     ))
     
     fig_importance.update_layout(
@@ -424,8 +429,8 @@ with tab2:
         paper_bgcolor='rgba(0,0,0,0)',
         plot_bgcolor='rgba(255,255,255,0.1)',
         font={'color': 'white', 'size': 14},
-        xaxis={'title': 'Importance', 'gridcolor': 'rgba(255,255,255,0.2)'},
-        yaxis={'title': '', 'gridcolor': 'rgba(255,255,255,0.2)'}
+        xaxis={'title': 'Importance', 'gridcolor': 'rgba(255,255,255,0.2)', 'color': 'white'},
+        yaxis={'title': '', 'gridcolor': 'rgba(255,255,255,0.2)', 'color': 'white'}
     )
     
     st.plotly_chart(fig_importance, use_container_width=True)
@@ -480,7 +485,7 @@ with tab3:
     st.markdown("<br>", unsafe_allow_html=True)
     
     st.markdown(f"""
-    <div style='background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+    <div style='background: linear-gradient(135deg, #1e3c72 0%, #7e22ce 100%); 
                 padding: 30px; border-radius: 15px; text-align: center;
                 border: 2px solid rgba(255, 255, 255, 0.3);'>
         <h3 style='color: white; margin: 0;'>👤 {txt['author']}</h3>
@@ -497,3 +502,4 @@ st.markdown(f"""
     <p style='color: white; font-size: 14px;'>{txt['footer']}</p>
 </div>
 """, unsafe_allow_html=True)
+
