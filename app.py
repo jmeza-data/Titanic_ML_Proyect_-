@@ -234,8 +234,7 @@ with tab1:
     st.markdown("<br>", unsafe_allow_html=True)
 
     if st.button(txt["predict_btn"]):
-        # ==================== BUG FIX: Correct DataFrame creation ====================
-        # Create DataFrame with only the columns the preprocessor expects
+        # ✅ CORRECT: Create DataFrame with ALL 9 columns the preprocessor expects
         input_df = pd.DataFrame({
             'Pclass': [pclass],
             'Sex': [sex],
@@ -243,15 +242,10 @@ with tab1:
             'SibSp': [sibsp],
             'Parch': [parch],
             'Fare': [fare],
-            'Embarked': [embarked]
+            'Embarked': [embarked],
+            'FamilySize': [family_size],
+            'IsAlone': [is_alone]
         })
-        
-        # Ensure correct data types
-        input_df['Pclass'] = input_df['Pclass'].astype(int)
-        input_df['Age'] = input_df['Age'].astype(float)
-        input_df['SibSp'] = input_df['SibSp'].astype(int)
-        input_df['Parch'] = input_df['Parch'].astype(int)
-        input_df['Fare'] = input_df['Fare'].astype(float)
         
         try:
             # Transform and predict
@@ -320,7 +314,7 @@ with tab1:
                 
         except Exception as e:
             st.error(f"Error making prediction: {str(e)}")
-            st.info("Please check that your model files are compatible with the input data.")
+            st.info("If the error persists, please verify your model files.")
 
 # ==================== TAB 2: METRICS ====================
 with tab2:
@@ -402,7 +396,7 @@ with tab2:
     st.markdown("---")
     st.markdown(f"## {txt['feature_importance']}")
     
-    # ==================== BUG FIX: Simplified colorbar configuration ====================
+    # ✅ FIXED: Simplified bar chart without problematic colorbar
     importance_data = {
         'Feature': ['💰 Fare', '👤 Age', '👨 Sex_male', '👩 Sex_female', '🎫 Pclass', '👨‍👩‍👧 FamilySize', '👫 SibSp', '👶 Parch'],
         'Importance': [0.25, 0.22, 0.18, 0.15, 0.10, 0.05, 0.03, 0.02]
@@ -410,7 +404,6 @@ with tab2:
     
     df_importance = pd.DataFrame(importance_data)
     
-    # Simplified approach - no colorbar to avoid the error
     fig_importance = go.Figure(go.Bar(
         x=df_importance['Importance'],
         y=df_importance['Feature'],
@@ -454,7 +447,7 @@ with tab3:
             <p style='color: white; font-size: 16px;'>
                 <strong>Training:</strong> 891 passengers<br>
                 <strong>Test:</strong> 418 passengers<br>
-                <strong>Features:</strong> 7 main variables
+                <strong>Features:</strong> 9 input variables
             </p>
         </div>
         """, unsafe_allow_html=True)
@@ -466,12 +459,11 @@ with tab3:
                     border: 2px solid rgba(255, 255, 255, 0.2);'>
             <h3 style='color: #FFD700;'>🤖 {txt['models_used']}</h3>
             <ul style='color: white; font-size: 16px;'>
-                <li>Logistic Regression</li>
-                <li>Random Forest</li>
-                <li>Gradient Boosting</li>
-                <li>Support Vector Machine (SVM)</li>
+                <li>Random Forest Classifier</li>
+                <li>Gradient Boosting Classifier</li>
+                <li>Support Vector Machine (SVC)</li>
                 <li>K-Nearest Neighbors (KNN)</li>
-                <li><strong>⭐ Ensemble Model</strong></li>
+                <li><strong>⭐ Voting Ensemble</strong></li>
             </ul>
             
             <h3 style='color: #FFD700; margin-top: 20px;'>🏆 {txt['best_model']}</h3>
@@ -502,4 +494,3 @@ st.markdown(f"""
     <p style='color: white; font-size: 14px;'>{txt['footer']}</p>
 </div>
 """, unsafe_allow_html=True)
-
