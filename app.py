@@ -3,6 +3,11 @@ import pandas as pd
 import pickle
 import plotly.graph_objects as go
 
+# Clear cache on app start - helps with model loading issues
+if 'models_loaded' not in st.session_state:
+    st.cache_resource.clear()
+    st.session_state.models_loaded = True
+
 # Page config
 st.set_page_config(
     page_title="Titanic Survival Predictor",
@@ -96,20 +101,55 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# Load models
+# Load models with better error handling
 @st.cache_resource
 def load_models():
+    model = None
+    prep = None
+    
+    # Try to load model
     try:
         with open('ensemble_model.pkl', 'rb') as f:
             model = pickle.load(f)
+        print("✅ Model loaded successfully")
+    except FileNotFoundError:
+        st.error("❌ ensemble_model.pkl not found in repository")
+        return None, None
+    except Exception as e:
+        st.error(f"❌ Error loading model: {str(e)}")
+        import traceback
+        st.error(traceback.format_exc())
+        return None, None
+    
+    # Try to load preprocessor
+    try:
         with open('preprocessor.pkl', 'rb') as f:
             prep = pickle.load(f)
-        return model, prep
-    except Exception as e:
-        st.error(f"Error loading models: {e}")
+        print("✅ Preprocessor loaded successfully")
+    except FileNotFoundError:
+        st.error("❌ preprocessor.pkl not found in repository")
         return None, None
+    except Exception as e:
+        st.error(f"❌ Error loading preprocessor: {str(e)}")
+        import traceback
+        st.error(traceback.format_exc())
+        return None, None
+    
+    return model, prep
 
+# Load models
 model, preprocessor = load_models()
+
+# Validate that models loaded correctly
+if model is None or preprocessor is None:
+    st.error("⚠️ CRITICAL ERROR: Models could not be loaded!")
+    st.info("Please check the error messages above and verify that:")
+    st.markdown("""
+    1. Files `ensemble_model.pkl` and `preprocessor.pkl` are in the repository root
+    2. The scikit-learn version in requirements.txt matches the version used to train the models
+    3. All dependencies are correctly installed
+    """)
+    st.stop()
 
 # ==================== LANGUAGE SELECTOR ====================
 lang = st.sidebar.selectbox("🌐 Language / Idioma", ["English", "Español"])
@@ -234,6 +274,11 @@ with tab1:
     st.markdown("<br>", unsafe_allow_html=True)
 
     if st.button(txt["predict_btn"]):
+        # Validate models are loaded
+        if model is None or preprocessor is None:
+            st.error("⚠️ Models not loaded. Cannot make prediction.")
+            st.stop()
+        
         # ✅ CORRECT: Create DataFrame with ALL 9 columns the preprocessor expects
         input_df = pd.DataFrame({
             'Pclass': [pclass],
@@ -314,7 +359,8 @@ with tab1:
                 
         except Exception as e:
             st.error(f"Error making prediction: {str(e)}")
-            st.info("If the error persists, please verify your model files.")
+            import traceback
+            st.error(traceback.format_exc())
 
 # ==================== TAB 2: METRICS ====================
 with tab2:
